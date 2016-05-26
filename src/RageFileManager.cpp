@@ -117,13 +117,16 @@ static bool GrabDriver( RageFileDriver *pDriver )
 {
 	g_Mutex->Lock();
 
-	while(1)
+	for(;;)
 	{
 		unsigned i;
 		for( i = 0; i < g_pDrivers.size(); ++i )
+		{
 			if( g_pDrivers[i]->m_pDriver == pDriver )
+			{
 				break;
-
+			}
+		}
 		if( i == g_pDrivers.size() )
 		{
 			g_Mutex->Unlock();
@@ -434,19 +437,7 @@ void RageFileManager::GetDirListing( const RString &sPath_, vector<RString> &Add
 
 	// Remove files that start with ._ from the list because these are special
 	// OS X files that cause interference on other platforms. -Kyz
-	for(size_t i= iOldSize; i < AddTo.size(); ++i)
-	{
-		size_t last_slash= AddTo[i].rfind('/');
-		last_slash= (last_slash == string::npos) ? 0 : (last_slash+1);
-		if(last_slash < AddTo[i].size() - 1)
-		{
-			if(AddTo[i][last_slash] == '.' && AddTo[i][last_slash+1] == '_')
-			{
-				AddTo.erase(AddTo.begin() + i);
-				--i;
-			}
-		}
-	}
+	StripMacResourceForks(AddTo);
 
 	if( iDriversThatReturnedFiles > 1 )
 	{
